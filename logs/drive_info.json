@@ -1,0 +1,11 @@
+[
+  {
+    "name": "",
+    "mount_point": "C:\\",
+    "total_space_gb": 237.65,
+    "available_space_gb": 62.77,
+    "is_removable": false,
+    "file_system": "\"NTFS\"",
+    "disk_type": "SSD"
+  }
+]
