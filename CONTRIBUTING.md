@@ -1,75 +1,156 @@
-# Security Policy
+# Contributing to Project Frida
 
-## Project Frida Security
+Thank you for your interest in contributing to Project Frida! This document provides guidelines and instructions for contributing to this project.
 
-Security is a core priority for Project Frida. Given the nature of this system monitoring and data collection framework, we take security vulnerabilities extremely seriously and are committed to addressing them promptly.
+## Table of Contents
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Workflow](#development-workflow)
+- [Coding Standards](#coding-standards)
+- [Security Considerations](#security-considerations)
+- [Pull Request Process](#pull-request-process)
+- [Documentation](#documentation)
+- [Testing](#testing)
 
-## Supported Versions
+## Code of Conduct
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.x.x   | :white_check_mark: |
+By participating in this project, you agree to maintain a respectful and harassment-free environment for everyone, regardless of gender, sexual orientation, disability, ethnicity, religion, or similar personal characteristics.
 
-## Reporting a Vulnerability
+- Use welcoming and inclusive language
+- Be respectful of differing viewpoints and experiences
+- Gracefully accept constructive criticism
+- Focus on what is best for the community
+- Show empathy towards other community members
 
-We greatly appreciate your efforts to responsibly disclose your findings and will make every effort to acknowledge your contribution.
+  /// This document provides guidelines and instructions for contributing to
+  /// Project Frida.
+  ///
+  /// By participating in this project, you agree to maintain a respectful and
+  /// harassment-free environment for everyone, regardless of gender, sexual
+  /// orientation, disability, ethnicity, religion, or similar personal
+  /// characteristics.
 
-### How to Report
+## Getting Started
 
-**DO NOT** create public GitHub issues for security vulnerabilities.
+1. **Fork the repository** on GitHub
+2. **Clone your fork** locally:
+   ```bash
+   git clone https://github.com/your-username/frida_rust.git
+   cd frida_rust
 
-Instead, please report security vulnerabilities to:
-- Email: security@example.com (replace with your actual security contact)
-- PGP Key: [Optional PGP key for encrypted communications]
+Add the upstream remote:
+git remote add upstream https://github.com/original-owner/frida_rust.git
 
-Please include the following information in your report:
-1. Description of the vulnerability
-2. Steps to reproduce the issue
-3. Potential impact of the vulnerability
-4. Suggested mitigation or fix (if available)
+Create a branch for your work:
+git checkout -b feature/your-feature-name
 
-### What to Expect
 
-After you have submitted your report, you can expect:
+Development Workflow
 
-1. **Acknowledgment**: We will acknowledge receipt of your vulnerability report within 48 hours.
-2. **Communication**: We will communicate with you to gather additional information, if needed.
-3. **Investigation**: We will investigate the issue and determine its impact.
-4. **Fix Development**: If the report is confirmed, we will develop a fix.
-5. **Release**: A security patch will be released for the affected versions.
-6. **Public Disclosure**: After the fix has been released, we may publicly disclose the vulnerability.
 
-## Security Best Practices for Users
+Keep your branch updated with the main repository:
 
-When deploying or using Project Frida, please follow these security best practices:
+git fetch upstream
+git rebase upstream/main
 
-1. **Keep Updated**: Always use the latest version of Project Frida.
-2. **Principle of Least Privilege**: Run Project Frida with the minimal set of permissions required for your use case.
-3. **Secure Configuration**: Configure the application securely, following the guidance in the documentation.
-4. **Audit Logs**: Regularly review audit logs for unexpected activity.
-5. **Network Security**: Deploy the application behind appropriate network security controls.
-6. **Data Protection**: Encrypt sensitive data collected by the framework.
+Commit your changes with clear, descriptive commit messages:
 
-## Security Design Principles
+git commit -m "Add feature: description of feature"
 
-Project Frida is designed with the following security principles in mind:
+Push your branch to your fork:
 
-1. **Defense in Depth**: Multiple layers of security controls are implemented.
-2. **Secure by Default**: Default configurations prioritize security.
-3. **Fail Securely**: When failures occur, they default to secure states.
-4. **Least Privilege**: Operations are performed with the minimum necessary privileges.
-5. **Secure Data Handling**: Data is protected at rest and in transit.
+git push -u origin feature/your-feature-name
 
-## Legal Considerations
+Create a Pull Request from your fork to the main repository
 
-Remember that the use of this software for unauthorized surveillance or data collection may be illegal in your jurisdiction. Always ensure that your use of Project Frida complies with all applicable laws and regulations, including but not limited to privacy laws and computer security legislation.
 
-## Security Acknowledgments
 
-We would like to thank the following individuals who have helped improve the security of Project Frida:
+Coding Standards
 
-- [List will be updated as contributions are made]
+Rust Code Guidelines
 
-## Contact
 
-For any questions about this security policy, please contact omohsen@pm.me.
+Follow the Rust API Guidelines
+
+Use rustfmt to format your code: cargo fmt
+
+Run clippy to catch common mistakes: cargo clippy
+
+Write documentation for public APIs
+
+Follow memory safety best practices
+
+Prefer strong typing over runtime checks
+
+Use error handling rather than panicking where appropriate
+
+
+File Organization
+
+
+Organize code into modules based on functionality
+
+Keep files focused on a single responsibility
+
+Place tests in a tests directory or in test modules
+
+
+Security Considerations
+
+Given the nature of this project, security is paramount:
+
+
+Never hardcode sensitive information like API keys or credentials
+
+Use secure cryptographic practices
+
+Consider the security implications of every change
+
+Document security considerations in your code
+
+Report security vulnerabilities privately to the maintainers
+
+
+Pull Request Process
+
+
+Ensure your code meets the project's coding standards
+
+Update documentation as needed
+
+Add tests for new functionality
+
+Make sure all tests pass: cargo test
+
+Update the README.md with details of significant changes if applicable
+
+Your PR will be reviewed by maintainers who may request changes
+
+Once approved, your PR will be merged
+
+
+Documentation
+
+
+Document all public APIs with rustdoc comments
+
+Keep documentation up-to-date with code changes
+
+Include examples in documentation where helpful
+
+Update relevant parts of README.md if your changes affect user-facing behavior
+
+
+Testing
+
+
+Write unit tests for new functionality
+
+Ensure existing tests pass with your changes
+
+Consider adding integration tests for complex features
+
+For security-sensitive features, include tests that verify security properties
+
+
+Thank you for contributing to Project Frida!
