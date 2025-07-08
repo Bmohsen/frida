@@ -3,6 +3,12 @@ name = "frida_rust"
 version = "0.1.0"
 edition = "2021"
 
+# Define test categories as feature flags
+[features]
+unit-tests = []
+integration-tests = []
+security-tests = []
+
 [dependencies]
 sysinfo = "0.30"
 rdev = "0.5"
@@ -13,3 +19,11 @@ tokio = { version = "1", features = ["full"] }
 rusb = "0.9"
 log = "0.4"
 chrono = "0.4"
+
+[dev-dependencies]
+mockall = "0.11.3"           # For creating mock objects
+rstest = "0.16.0"            # For parameterized tests and fixtures
+insta = "1.26.0"             # For snapshot testing
+tempfile = "3.3.0"           # For temporary test directories
+tokio-test = "0.4.2"         # For testing async code
+serial_test = "0.10.0"       # For tests that can't run in parallel

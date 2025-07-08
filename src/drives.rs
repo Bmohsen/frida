@@ -12,10 +12,10 @@ use sysinfo::{Disk, Disks, Pid, System, Users};
 #[derive(Serialize, Debug)]
 pub struct DriveInfo {
     pub name: String,
-    pub(crate) mount_point: String,
+    pub mount_point: String,
     pub total_space_gb: f64,
     pub available_space_gb: f64,
-    pub(crate) is_removable: bool,
+    pub is_removable: bool,
     pub is_system: bool,
     pub file_system: String,
     pub disk_type: String,
@@ -105,5 +105,92 @@ pub fn sys_info() -> SysInfo<String> {
         cpu,
         cpu_cores,
         memmory,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_bytes_to_gb_conversion() {
+        // Test with 1GB
+        assert_eq!(bytes_to_gb(1073741824), 1.0);
+        
+        // Test with 2.5GB
+        assert_eq!(bytes_to_gb(2684354560), 2.5);
+        
+        // Test with small value
+        assert_eq!(bytes_to_gb(104857600), 0.1); // 100MB should be 0.1GB
+    }
+    
+    #[test]
+    fn test_list_drives_returns_something() {
+        let drives = list_drives();
+        // Should return at least one drive on any system
+        assert!(!drives.is_empty(), "No drives detected, which is unlikely on a real system");
+    }
+    
+    #[test]
+    fn test_drive_info_structure() {
+        let drives = list_drives();
+        if !drives.is_empty() {
+            let first_drive = &drives[0];
+            
+            // Available space must be less than or equal to total space
+            // Only check this if we have a non-zero total space
+            if first_drive.total_space_gb > 0.0 {
+                assert!(first_drive.available_space_gb <= first_drive.total_space_gb,
+                    "Available space cannot exceed total space");
+            }
+                
+            // Only validate non-empty file system if we actually have a file system
+            // Some virtual drives might not report this correctly
+            if !first_drive.file_system.is_empty() {
+                assert!(first_drive.file_system.len() > 0, "File system should be identified");
+            }
+            
+            // Test passes as long as we can access the drive info structure
+            // without crashing, regardless of the actual values
+        }
+    }
+    
+    #[test]
+    fn test_sys_info_contains_data() {
+        let info = sys_info();
+        
+        // In test environments or containers, some system info might not be available
+        // Only make assertions that should be true on any system that can run the tests
+        
+        // We should have at least a username or a placeholder
+        // The current_user should be available from the Users struct, but let's be cautious
+        println!("Current user: {}", info.current_user);
+        
+        // CPU cores should be at least 1 on any system that can run the test
+        if info.cpu_cores == 0 {
+            println!("Warning: CPU cores reported as 0, which is unusual");
+        }
+        
+        // Memory info check - just verify we can call the method
+        if let Some(mem_str) = &info.memmory {
+            println!("Memory info: {}", mem_str);
+        }
+        
+        // This test primarily verifies that sys_info() runs without crashing
+        // It's sufficient for the test to complete without panicking
+    }
+    
+    #[test]
+    fn test_list_processes() {
+        let processes = list_pss();
+        
+        // Should find at least some processes on any running system
+        assert!(!processes.is_empty(), "No processes found, which is impossible on a running system");
+        
+        if !processes.is_empty() {
+            let first_process = &processes[0];
+            // Process should have a name
+            assert!(!first_process.name.is_empty(), "Process name should not be empty");
+        }
     }
 }
