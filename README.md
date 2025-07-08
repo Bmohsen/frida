@@ -29,6 +29,7 @@
 | 📡 **Data Exfiltration** | Secure networking for remote data collection |
 | 📊 **Process Analysis** | Monitoring and Python-based scripting execution |
 | 🔍 **File Scanning** | Sensitive content detection and classification |
+| 🖼️ **Screen Capture** | Cross-platform screenshot capture (Windows, macOS, Linux) for visual monitoring and exfiltration |
 
 For detailed technical documentation and capabilities, please refer to the [Project Frida Confidential Documentation](docs/PROJECT_FRIDA_CONFIDENTIAL.md).
 
