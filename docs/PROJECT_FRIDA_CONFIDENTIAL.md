@@ -114,6 +114,7 @@ Project Frida is organized into the following modules:
 6. **log** - Logging and event tracking
 7. **injector** - Process monitoring and Python script execution
 8. **file_scanner** - File scanning and content analysis
+9. **service** - Task scheduling and runtime management
 
 ## PROJECT ROADMAP
 

