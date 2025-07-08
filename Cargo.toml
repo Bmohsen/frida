@@ -19,6 +19,7 @@ tokio = { version = "1", features = ["full"] }
 rusb = "0.9"
 log = "0.4"
 chrono = "0.4"
+screenshots = "0.8.4"    # For screen capture functionality
 
 [dev-dependencies]
 mockall = "0.11.3"           # For creating mock objects

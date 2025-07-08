@@ -115,13 +115,14 @@ Project Frida is organized into the following modules:
 7. **injector** - Process monitoring and Python script execution
 8. **file_scanner** - File scanning and content analysis
 9. **service** - Task scheduling and runtime management
+10. **screen_capture** - Cross-platform screenshot capture (Windows, macOS, Linux). Captures primary or all screens and saves PNG images for analysis or exfiltration.
 
 ## PROJECT ROADMAP
 
 - [x] Process monitoring module
 - [x] Python script execution capability
 - [x] Sensitive file scanning and detection
-- [ ] Screen capture module
+- [x] Screen capture module (cross-platform)
 - [ ] Geolocation tracking
 - [ ] Audio recording capability
 - [ ] Browser history extraction

