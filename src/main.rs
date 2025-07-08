@@ -56,7 +56,7 @@ async fn main() {
     match screen_capture::ScreenCapture::capture_and_save("logs/screenshots") {
         Ok(path) => Log::info(format!("Screenshot saved to {}", path)),
         Err(e) => Log::error(format!("Failed to capture screenshot: {:?}", e)),
-    }
+    };
     // 3. Persist locally.
     let _ = writer::save_output(&drives, "logs/drive_info.json", false)
     .map_err(|e| Log::error(format!("Failed to save drive info: {}", e))); 
