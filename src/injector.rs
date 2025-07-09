@@ -63,7 +63,7 @@ impl ProcessMonitor {
     pub fn new() -> Self {
         let mut system = System::new_all();
         system.refresh_all();
-        
+
         Self {
             system: Arc::new(Mutex::new(system)),
         }
@@ -73,8 +73,9 @@ impl ProcessMonitor {
     pub fn list_processes(&self) -> Vec<ProcessInfo> {
         let mut system = self.system.lock().unwrap();
         system.refresh_processes();
-        
-        system.processes()
+
+        system
+            .processes()
             .values()
             .map(ProcessInfo::from_process)
             .collect()
@@ -84,8 +85,10 @@ impl ProcessMonitor {
     pub fn get_process(&self, pid: u32) -> Option<ProcessInfo> {
         let mut system = self.system.lock().unwrap();
         system.refresh_processes();
-        
-        system.process(Pid::from_u32(pid)).map(ProcessInfo::from_process)
+
+        system
+            .process(Pid::from_u32(pid))
+            .map(ProcessInfo::from_process)
     }
 
     /// Execute a Python script against a target process
@@ -113,7 +116,11 @@ impl ProcessMonitor {
             return Err(format!("Process with PID {} not found", target_pid));
         }
 
-        log::info!("Executing Python script: {:?} on PID: {}", script_path, target_pid);
+        log::info!(
+            "Executing Python script: {:?} on PID: {}",
+            script_path,
+            target_pid
+        );
 
         // Execute the Python script with the target PID as an argument
         let output = Command::new(&python_exe)
@@ -142,22 +149,23 @@ impl ProcessMonitor {
     pub fn monitor_suspicious_activity(&self) -> Vec<(ProcessInfo, String)> {
         let mut system = self.system.lock().unwrap();
         system.refresh_processes();
-        
-        system.processes()
+
+        system
+            .processes()
             .values()
             .filter_map(|process| {
                 let cpu_usage = process.cpu_usage() as f32;
                 let memory_usage_mb = process.memory() / 1024 / 1024;
-                
+
                 if cpu_usage > 90.0 {
                     Some((
                         ProcessInfo::from_process(process),
-                        format!("High CPU usage: {:.2}%", cpu_usage)
+                        format!("High CPU usage: {:.2}%", cpu_usage),
                     ))
                 } else if memory_usage_mb > 1000 {
                     Some((
                         ProcessInfo::from_process(process),
-                        format!("High memory usage: {} MB", memory_usage_mb)
+                        format!("High memory usage: {} MB", memory_usage_mb),
                     ))
                 } else {
                     None
@@ -215,7 +223,10 @@ if __name__ == "__main__":
         sys.exit(1)
 "#;
         std::fs::write(&process_analysis_script, script_content).map_err(|e| e.to_string())?;
-        log::info!("Created sample Python script at: {:?}", process_analysis_script);
+        log::info!(
+            "Created sample Python script at: {:?}",
+            process_analysis_script
+        );
     }
 
     // Create sample memory analysis script
@@ -252,7 +263,10 @@ if __name__ == "__main__":
         sys.exit(1)
 "#;
         std::fs::write(&memory_analysis_script, script_content).map_err(|e| e.to_string())?;
-        log::info!("Created sample Python script at: {:?}", memory_analysis_script);
+        log::info!(
+            "Created sample Python script at: {:?}",
+            memory_analysis_script
+        );
     }
 
     Ok(())
@@ -273,7 +287,7 @@ pub fn start_injector_service() {
     // Start with an initial list of processes
     let initial_processes = monitor.list_processes();
     log::info!("Initial process count: {}", initial_processes.len());
-    
+
     // Log a few example processes
     for (i, proc) in initial_processes.iter().take(5).enumerate() {
         log::info!("Process {}: {} (PID: {})", i + 1, proc.name, proc.pid);
@@ -282,37 +296,37 @@ pub fn start_injector_service() {
     // Start the monitoring thread
     thread::spawn(move || {
         let mut last_check = Instant::now();
-        
+
         loop {
             // Periodically check for suspicious activity
             if last_check.elapsed() > Duration::from_secs(CHECK_INTERVAL_SECONDS * 2) {
                 let suspicious = monitor_clone.monitor_suspicious_activity();
-                
+
                 if !suspicious.is_empty() {
                     log::info!("Found {} suspicious activities", suspicious.len());
-                    
+
                     for (proc, reason) in suspicious {
                         let alert = format!(
-                            "Suspicious process activity: {} (PID: {}) - {}", 
+                            "Suspicious process activity: {} (PID: {}) - {}",
                             proc.name, proc.pid, reason
                         );
-                        
+
                         log::info!("{}", alert);
-                        
+
                         // Save to log file
                         if let Err(e) = writer::save_output(&alert, PROCESS_LOG_FILE, true) {
                             log::error!("Failed to write suspicious activity: {}", e);
                         }
                     }
                 }
-                
+
                 last_check = Instant::now();
             }
-            
+
             // Sleep before checking again
             thread::sleep(Duration::from_secs(CHECK_INTERVAL_SECONDS));
         }
     });
-    
+
     log::info!("Process monitoring service is running");
 }
