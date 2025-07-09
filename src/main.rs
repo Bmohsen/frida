@@ -57,19 +57,6 @@ async fn main() {
         Ok(path) => Log::info(format!("Screenshot saved to {}", path)),
         Err(e) => Log::error(format!("Failed to capture screenshot: {:?}", e)),
     };
-    
-    // 2.2. Get geolocation information
-    let geolocator = geolocation::Geolocator::default();
-    match geolocator.get_location_info().await {
-        Ok(location) => {
-            Log::info(format!("Geolocation information obtained"));
-            let location_str = geolocation::Geolocator::format_location(&location);
-            Log::info(location_str);
-            let _ = writer::save_output(&location, "logs/geolocation.json", false)
-                .map_err(|e| Log::error(format!("Failed to save geolocation data: {}", e)));
-        },
-        Err(e) => Log::error(format!("Failed to get geolocation: {}", e)),
-    };
     // 3. Persist locally.
     let _ = writer::save_output(&drives, "logs/drive_info.json", false)
     .map_err(|e| Log::error(format!("Failed to save drive info: {}", e))); 
