@@ -124,10 +124,31 @@ Project Frida is organized into the following modules:
 - [x] Python script execution capability
 - [x] Sensitive file scanning and detection
 - [x] Screen capture module (cross-platform)
-- [ ] Geolocation tracking
+- [x] Geolocation tracking
 - [ ] Audio recording capability
 - [ ] Browser history extraction
 - [ ] Memory forensics integration
 - [ ] Advanced anti-detection features
+
+## MILESTONES
+
+### Milestone 1: Complete Cross-Platform Support
+Develop Project FRIDA into the ultimate tracking and data collection tool across all major platforms:
+- [x] Windows - Current primary platform
+- [x] Linux - Basic functionality implemented
+- [x] macOS - Basic functionality implemented
+- [ ] Android - To be implemented
+- [ ] iOS - To be implemented
+
+This milestone will ensure consistent monitoring capabilities regardless of target environment, with unified codebase and APIs where possible, and platform-specific implementations where necessary.
+
+### Milestone 2: Enhanced Network Capabilities
+Expand network functionality for robust remote operation and data exfiltration:
+- [ ] Encrypted peer-to-peer communication
+- [ ] Command & control server integration
+- [ ] Resilient data transmission with retry mechanisms
+- [ ] Low-bandwidth operation modes
+- [ ] Stealth network traffic patterns
+- [ ] Protocol obfuscation techniques
 
 *This document contains sensitive information and should be handled according to organizational security policies. Unauthorized disclosure is strictly prohibited.*
