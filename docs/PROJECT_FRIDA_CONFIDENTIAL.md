@@ -39,6 +39,13 @@ The secure networking module enables remote data collection:
 - Transmits to centralized collection endpoints
 - Implements fallback mechanisms for transmission failures
 
+#### 4.1. Stealthy Data Transfer
+
+To minimize the network footprint and evade detection, a stealthy transfer mechanism is implemented:
+- **File Chunking**: Large files are broken down into small, fixed-size chunks (e.g., 1KB).
+- **Sequenced Transmission**: Each chunk is sent with metadata, including a file ID and chunk index, allowing for reliable reassembly on the server.
+- **Traffic Obfuscation**: Chunks are sent over standard protocols like HTTPS to blend in with normal web traffic.
+
 ### 5. Process Monitoring and Analysis
 
 The process monitoring module provides detailed insights into running processes:
@@ -117,6 +124,8 @@ Project Frida is organized into the following modules:
 9. **service** - Task scheduling and runtime management
 10. **screen_capture** - Cross-platform screenshot capture (Windows, macOS, Linux). Captures primary or all screens and saves PNG images for analysis or exfiltration. Supports timed capture functionality with configurable intervals in seconds for continuous surveillance.
 11. **geolocation** - Cross-platform location tracking via IP geolocation. Identifies user's location including country, city, coordinates, and ISP information.
+12. **network_stealth** - Provides stealthy data transfer capabilities by chunking files and sending them over the network to evade detection.
+13. **replica** - Process injection module (Windows-only) responsible for injecting the agent into other running processes to enhance stealth and persistence using techniques like `CreateRemoteThread`.
 
 ## PROJECT ROADMAP
 
@@ -128,7 +137,7 @@ Project Frida is organized into the following modules:
 - [ ] Audio recording capability
 - [ ] Browser history extraction
 - [ ] Memory forensics integration
-- [ ] Advanced anti-detection features
+- [x] Advanced anti-detection features (Process Injection)
 
 ## MILESTONES
 
@@ -148,7 +157,7 @@ Expand network functionality for robust remote operation and data exfiltration:
 - [ ] Command & control server integration
 - [ ] Resilient data transmission with retry mechanisms
 - [ ] Low-bandwidth operation modes
-- [ ] Stealth network traffic patterns
+- [x] Stealth network traffic patterns
 - [ ] Protocol obfuscation techniques
 
 *This document contains sensitive information and should be handled according to organizational security policies. Unauthorized disclosure is strictly prohibited.*

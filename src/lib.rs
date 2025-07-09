@@ -13,5 +13,3 @@ pub mod log;
 pub mod network;
 pub mod screen_capture;
 pub mod writer;
-pub mod log;
-pub mod screen_capture;

