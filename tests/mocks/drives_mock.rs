@@ -62,7 +62,11 @@ impl DriveEnumerator for TestDriveEnumerator {
                 is_removable: !mock_drive.is_system,
                 is_system: mock_drive.is_system,
                 file_system: "NTFS".to_string(),
-                disk_type: if mock_drive.is_system { "SSD".to_string() } else { "HDD".to_string() },
+                disk_type: if mock_drive.is_system {
+                    "SSD".to_string()
+                } else {
+                    "HDD".to_string()
+                },
             })
             .collect()
     }

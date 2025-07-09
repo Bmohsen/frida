@@ -10,8 +10,6 @@ pub struct Log {
     pub message: (),
 }
 
-
-
 impl Log {
     pub fn info(msg: String) -> Log {
         Log {
@@ -19,7 +17,6 @@ impl Log {
             message: println!("[INFO]: {}", msg),
         }
     }
-
 
     pub fn error(msg: String) -> Log {
         Log {
@@ -35,6 +32,3 @@ impl Log {
         }
     }
 }
-
-
-
