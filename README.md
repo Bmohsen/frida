@@ -30,6 +30,7 @@
 | 📊 **Process Analysis** | Monitoring and Python-based scripting execution |
 | 🔍 **File Scanning** | Sensitive content detection and classification |
 | 🖼️ **Screen Capture** | Cross-platform screenshot capture (Windows, macOS, Linux) for visual monitoring and exfiltration |
+| 🌎 **Geolocation** | Cross-platform location tracking via IP geolocation |
 
 For detailed technical documentation and capabilities, please refer to the [Project Frida Confidential Documentation](docs/PROJECT_FRIDA_CONFIDENTIAL.md).
 
