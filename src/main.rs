@@ -29,6 +29,7 @@ use crate::geolocation::Geolocator;
 use crate::log::Log;
 use serde::Serialize;
 use std::env;
+use std::fs;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::select;
@@ -71,18 +72,32 @@ async fn main() {
     };
 
     // 2.2. Get geolocation information
-    let geolocator = Geolocator::default();
-    match geolocator.get_ip_location().await {
-        Ok(location) => {
-            Log::info(format!("IP-based geolocation information obtained"));
-            let location_str = geolocation::Geolocator::format_location(&location);
-            Log::info(location_str);
-            if let Err(e) = writer::save_output(&location, "logs/geolocation.json", false) {
-                Log::error(format!("Failed to save geolocation data: {}", e));
+    Log::info(format!("Attempting to get geolocation information..."));
+    // Make sure logs directory exists before we try to save geolocation data
+    if let Err(e) = fs::create_dir_all("logs") {
+        Log::error(format!("Failed to create logs directory: {}", e));
+    }
+    
+    // Use a timeout to prevent hanging on network operations
+    match tokio::time::timeout(std::time::Duration::from_secs(10), async {
+        let geolocator = Geolocator::new(5); // 5 second timeout
+        geolocator.get_ip_location().await
+    }).await {
+        Ok(result) => match result {
+            Ok(location) => {
+                Log::info(format!("IP-based geolocation information obtained"));
+                let location_str = geolocation::Geolocator::format_location(&location);
+                Log::info(location_str);
+                if let Err(e) = writer::save_output(&location, "logs/geolocation.json", false) {
+                    Log::error(format!("Failed to save geolocation data: {}", e));
+                }
+            },
+            Err(e) => {
+                Log::error(format!("Failed to get geolocation: {}", e));
             }
-        }
-        Err(e) => {
-            Log::error(format!("Failed to get geolocation: {}", e));
+        },
+        Err(_) => {
+            Log::error(format!("Geolocation timed out after 10 seconds"));
         }
     };
     // 3. Persist locally.

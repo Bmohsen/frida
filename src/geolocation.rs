@@ -1,6 +1,3 @@
-#![doc(test(no_crate_inject))]
-#![doc(test(attr(no_run)))] 
-
 //! Geolocation module for system location tracking
 //!
 //! This module provides cross-platform geolocation capabilities by:

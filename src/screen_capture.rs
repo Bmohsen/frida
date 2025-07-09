@@ -29,6 +29,10 @@ impl ScreenCapture {
     ) -> Result<Vec<String>, ScreenCaptureError> {
         let mut paths = Vec::new();
 
+        // Create output directory if it doesn't exist
+        fs::create_dir_all(&output_dir)
+            .map_err(|e| ScreenCaptureError::SaveFailed(e.to_string()))?;
+            
         // For immediate capture
         let capture_once = || -> Result<String, ScreenCaptureError> {
             let screens =
