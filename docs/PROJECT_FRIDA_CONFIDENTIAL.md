@@ -124,7 +124,7 @@ Project Frida is organized into the following modules:
 - [x] Python script execution capability
 - [x] Sensitive file scanning and detection
 - [x] Screen capture module (cross-platform)
-- [x] Geolocation tracking
+- [ ] Geolocation tracking
 - [ ] Audio recording capability
 - [ ] Browser history extraction
 - [ ] Memory forensics integration
