@@ -12,3 +12,4 @@ pub mod injector;
 pub mod file_scanner;
 pub mod log;
 pub mod screen_capture;
+pub mod geolocation;
