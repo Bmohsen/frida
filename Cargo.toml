@@ -34,6 +34,7 @@ async-trait = "0.1.73"  # For async traits
 dirs = "5.0.1"          # For home directory access
 uuid = { version = "1.8.0", features = ["v4", "serde"] } # For unique ID generation
 rand = "0.8.5"
+clap = { version = "4.4", features = ["derive", "env"] }
 async-recursion = "1.0.0"            # For random number generation
 
 [dev-dependencies]
