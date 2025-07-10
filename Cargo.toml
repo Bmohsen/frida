@@ -8,6 +8,11 @@ edition = "2021"
 unit-tests = []
 integration-tests = []
 security-tests = []
+dll = []
+
+[lib]
+name = "agent"
+crate-type = ["cdylib"]
 
 [dependencies]
 sysinfo = "0.30"
