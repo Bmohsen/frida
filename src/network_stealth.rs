@@ -13,7 +13,9 @@ use reqwest::Client;
 use tokio::time::{sleep, Duration};
 use rand::{thread_rng, Rng};
 
-const CHUNK_SIZE: usize = 1024; // 1 KB chunks
+use crate::constants::STEALTH_CHUNK_SIZE;
+
+const CHUNK_SIZE: usize = STEALTH_CHUNK_SIZE; // 1 KB chunks
 
 /// Represents a single chunk of a file being transferred.
 #[derive(Serialize, Deserialize, Debug)]

