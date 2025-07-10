@@ -69,7 +69,8 @@ The filesystem crawler module provides an exhaustive and stealthy enumeration of
 
 - **Asynchronous Traversal**: Utilizes `tokio` and asynchronous recursion to walk directory trees with minimal performance impact.
 - **Comprehensive Mapping**: Builds a complete tree structure of the filesystem, capturing all accessible files and directories.
-- **JSON Output**: Serializes the filesystem tree into a JSON file for structured analysis and exfiltration.
+- **JSON Lines Output**: Serializes the filesystem tree into JSON Lines files, where each line is a separate JSON object representing a file or directory.
+- **Output Splitting**: To manage large crawls, the output is automatically split into multiple files once a configurable number of entries is reached. This prevents individual files from becoming too large and simplifies data processing.
 - **Low Footprint**: Designed to operate with low CPU and I/O overhead to avoid detection.
 
 ### 8. Screen Capture
@@ -80,13 +81,46 @@ The screen capture module provides capabilities to capture the user's desktop ac
 - **Flexible Capture**: Can capture the primary screen or all connected displays.
 - **Image Compression**: Supports saving captures in formats like PNG and WebP to optimize file size for exfiltration.
 
-### 9. Geolocation Tracking
+### 9. Process Replication (Windows)
+
+The process replication module, codenamed "Replica," enhances stealth and persistence by injecting the agent into trusted system processes.
+
+- **Targeted Injection**: Injects a DLL version of the agent into high-privilege or common system processes like `svchost.exe` and `explorer.exe`.
+- **Dynamic Process Discovery**: Scans for all running instances of target processes and attempts to inject into each one.
+- **`CreateRemoteThread` Technique**: Uses the classic and reliable `CreateRemoteThread` method for DLL injection on Windows platforms.
+- **Access Escalation**: By running inside a system process, the agent can gain access to protected files and system-level APIs.
+
+### 10. Geolocation Tracking
 
 The geolocation module estimates the physical location of the target system.
 
 - **Multi-Source Triangulation**: Combines data from IP-based geolocation services and Wi-Fi network scanning (where available).
 - **Location Data**: Provides coordinates (latitude, longitude), city, country, and ISP information.
 - **Resilient**: Includes fallback mechanisms if one data source is unavailable.
+
+## Data Storage
+
+To ensure reliable and predictable behavior, especially when the agent is injected into other processes, all application data is stored in a centralized directory named `frida_data`. This directory is created in the same location as the agent's binary (EXE or DLL).
+
+This approach prevents the agent from writing files to the working directory of a host process (e.g., `C:\Windows\System32`), which can cause permission errors and scatter data across the filesystem.
+
+The structure of the `frida_data` directory is as follows:
+
+```
+/path/to/agent/
+|-- frida_agent.exe
+|-- agent.dll
++-- frida_data/
+    |-- logs/
+    |   |-- frida.log
+    |-- screenshots/
+    |   |-- ...
+    |-- filesystem_tree.jsonl
+    |-- geolocation.json
+    |-- drive_info.json
+```
+
+This centralized storage is managed by the `src/paths.rs` module.
 
 ## TECHNICAL IMPLEMENTATION
 
