@@ -12,7 +12,7 @@ dll = []
 
 [lib]
 name = "agent"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 sysinfo = "0.30"

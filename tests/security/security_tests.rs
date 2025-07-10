@@ -1,14 +1,15 @@
-//! Security-focused tests for Project FRIDA
-//!
-//! These tests verify security aspects of the application, including:
-//! - Safe handling of sensitive data
-//! - Proper permissions and access control
-//! - Detection avoidance mechanisms
+/// Security-focused tests for Project FRIDA
+///
+/// These tests verify security aspects of the application, including:
+/// - Safe handling of sensitive data
+/// - Proper permissions and access control
+/// - Detection avoidance mechanisms
 
-// #[cfg(feature = "security-tests")]
+
 mod security_tests {
-    use frida_rust::log::Log;
     use std::fs;
+
+    use agent::log::Log;
 
     // Test that sensitive data is properly sanitized before logging
     #[test]

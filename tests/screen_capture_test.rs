@@ -1,6 +1,6 @@
 //! Integration test for the cross-platform screen_capture module
 
-use frida_rust::screen_capture::ScreenCapture;
+use agent::screen_capture::ScreenCapture;
 use std::fs;
 
 #[test]

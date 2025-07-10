@@ -1,5 +1,5 @@
 // Import from the actual library crate, not from tests
-use frida_rust::drives::{DriveInfo, SysInfo};
+use agent::drives::{DriveInfo, SysInfo};
 
 // Define the MockDrive directly in this file instead of importing from common
 pub struct MockDrive {

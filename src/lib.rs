@@ -7,6 +7,7 @@ pub mod device_monitor;
 pub mod drives;
 pub mod file_scanner;
 pub mod geolocation;
+pub mod agent_tasks;
 pub mod injector;
 pub mod keylogger;
 pub mod log;
@@ -16,7 +17,6 @@ pub mod writer;
 pub mod paths;
 pub mod constants;
 pub mod crawler;
-pub mod agent_tasks;
 
 
 #[cfg(all(windows, feature = "dll"))]
