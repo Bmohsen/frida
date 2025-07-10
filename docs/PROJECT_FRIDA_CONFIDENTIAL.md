@@ -63,6 +63,31 @@ The file scanner module searches for sensitive files across all storage devices:
 - Catalogs files with detailed metadata (size, modification time, location)
 - Integrates with ML capabilities for content classification
 
+### 7. Filesystem Crawling
+
+The filesystem crawler module provides an exhaustive and stealthy enumeration of all files and directories on connected storage drives.
+
+- **Asynchronous Traversal**: Utilizes `tokio` and asynchronous recursion to walk directory trees with minimal performance impact.
+- **Comprehensive Mapping**: Builds a complete tree structure of the filesystem, capturing all accessible files and directories.
+- **JSON Output**: Serializes the filesystem tree into a JSON file for structured analysis and exfiltration.
+- **Low Footprint**: Designed to operate with low CPU and I/O overhead to avoid detection.
+
+### 8. Screen Capture
+
+The screen capture module provides capabilities to capture the user's desktop activity.
+
+- **Cross-Platform**: Works on Windows, macOS, and Linux.
+- **Flexible Capture**: Can capture the primary screen or all connected displays.
+- **Image Compression**: Supports saving captures in formats like PNG and WebP to optimize file size for exfiltration.
+
+### 9. Geolocation Tracking
+
+The geolocation module estimates the physical location of the target system.
+
+- **Multi-Source Triangulation**: Combines data from IP-based geolocation services and Wi-Fi network scanning (where available).
+- **Location Data**: Provides coordinates (latitude, longitude), city, country, and ISP information.
+- **Resilient**: Includes fallback mechanisms if one data source is unavailable.
+
 ## TECHNICAL IMPLEMENTATION
 
 Project Frida leverages multiple concurrency primitives in Rust:
